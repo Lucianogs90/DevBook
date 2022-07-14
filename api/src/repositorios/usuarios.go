@@ -3,6 +3,7 @@ package repositorios
 import (
 	"api/src/modelos"
 	"database/sql"
+	"fmt"
 )
 
 //Representa um repositório de Usuarios
@@ -39,4 +40,40 @@ func (repositorio Usuarios) Criar(usuario modelos.Usuario) (uint, error) {
 	}
 
 	return uint(ID), nil
+}
+
+//Buscar traz todos os usuários que atendem a um filtro de nome ou nick
+func (respositorio Usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error) {
+	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick) //%nomeOuNick% => os dois primeiros e os dois últimos '%' são carcteres de escape
+
+	linhas, erro := respositorio.db.Query(
+		"SELECT (id, nome, nick, email, criacao) FROM usuarios WHERE nome LIKE ? OR nick LIKE ?",
+		nomeOuNick,
+		nomeOuNick,
+	)
+	if erro != nil {
+		return nil, erro
+	}
+
+	defer linhas.Close()
+
+	var usuarios []modelos.Usuario
+
+	for linhas.Next() {
+		var usuario modelos.Usuario
+
+		if erro = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.Criacao,
+		); erro != nil {
+			return nil, erro
+		}
+
+		usuarios = append(usuarios, usuario)
+	}
+
+	return usuarios, nil
 }
