@@ -22,11 +22,13 @@ func Carregar() {
 	var erro error
 
 	if erro = godotenv.Load(); erro != nil {
+		fmt.Print("Não carregou")
 		log.Fatal(erro)
 	}
 
 	Porta, erro = strconv.Atoi(os.Getenv("API_PORT"))
 	if erro != nil {
+		fmt.Print("Erro na Porta")
 		Porta = 9000
 	}
 
@@ -34,5 +36,5 @@ func Carregar() {
 		os.Getenv("BD_USUARIO"),
 		os.Getenv("BD_SENHA"),
 		os.Getenv("BD_NOME"))
-		
+
 }
