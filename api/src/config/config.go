@@ -33,8 +33,8 @@ func Carregar() {
 	}
 
 	StringConexao = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
-		os.Getenv("BD_USUARIO"),
-		os.Getenv("BD_SENHA"),
-		os.Getenv("BD_NOME"))
+		os.Getenv("DB_USUARIO"),
+		os.Getenv("DB_SENHA"),
+		os.Getenv("DB_NOME"))
 
 }
