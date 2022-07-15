@@ -47,7 +47,7 @@ func (respositorio Usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error
 	nomeOuNick = fmt.Sprintf("%%%s%%", nomeOuNick) //%nomeOuNick% => os dois primeiros e os dois últimos '%' são carcteres de escape
 
 	linhas, erro := respositorio.db.Query(
-		"SELECT (id, nome, nick, email, criacao) FROM usuarios WHERE nome LIKE ? OR nick LIKE ?",
+		"SELECT id, nome, nick, email, criacao FROM usuarios WHERE nome LIKE ? OR nick LIKE ?",
 		nomeOuNick,
 		nomeOuNick,
 	)
@@ -76,4 +76,29 @@ func (respositorio Usuarios) Buscar(nomeOuNick string) ([]modelos.Usuario, error
 	}
 
 	return usuarios, nil
+}
+
+//BuscaPorID traz um usuário específico do banco de dados
+func (repositorio Usuarios) BuscaPorID(ID uint64) (modelos.Usuario, error) {
+	linhas, erro := repositorio.db.Query("SELECT id, nome, nick, email, criacao FROM usuarios WHERE id = ?", ID)
+	if erro != nil {
+		return modelos.Usuario{}, nil
+	}
+	defer linhas.Close()
+
+	var usuario modelos.Usuario
+
+	if linhas.Next() {
+		if erro = linhas.Scan(
+			&usuario.ID,
+			&usuario.Nome,
+			&usuario.Nick,
+			&usuario.Email,
+			&usuario.Criacao,
+		); erro != nil {
+			return modelos.Usuario{}, nil
+		}
+	}
+
+	return usuario, nil
 }

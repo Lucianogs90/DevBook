@@ -8,7 +8,10 @@ import (
 	"encoding/json"
 	"io/ioutil"
 	"net/http"
+	"strconv"
 	"strings"
+
+	"github.com/gorilla/mux"
 )
 
 //CriarUsuario insere um novo usuário no banco de dados
@@ -71,30 +74,28 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 
 //BuscaUsuario pesquisa um usuário salvo no banco de dados
 func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
-	// parametros := mux.Vars(r)
+	parametros := mux.Vars(r)
 
-	// ID, erro := strconv.ParseUint(parametros["id"], 10, 64)
-	// if erro != nil {
-	// 	log.Fatal(erro)
-	// }
+	ID, erro := strconv.ParseUint(parametros["id"], 10, 64)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusBadRequest, erro)
+		return
+	}
 
-	// db, erro := banco.Conectar()
-	// if erro != nil {
-	// 	log.Fatal(erro)
-	// }
-	// defer db.Close()
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.ERRO(w, http.StatusInternalServerError, erro)
+		return
+	}
+	defer db.Close()
 
-	// resultado, erro := db.Query("SELECT * FROM usuarios WHERE ID = ?", ID)
-	// if erro != nil {
-	// 	log.Fatal(erro)
-	// }
-	// defer resultado.Close()
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+	resultado, erro := repositorio.BuscaPorID(ID)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusBadRequest, erro)
+	}
 
-	// var usuario modelos.Usuario
-	// if erro = json.NewEncoder(w).Encode(&usuario); erro != nil {
-	// 	log.Fatal(erro)
-	// }
-
+	respostas.JSON(w, http.StatusOK, resultado)
 }
 
 //AlterarUsuario altera um usuário no banco de dados
