@@ -76,7 +76,7 @@ func BuscarUsuarios(w http.ResponseWriter, r *http.Request) {
 func BuscarUsuario(w http.ResponseWriter, r *http.Request) {
 	parametros := mux.Vars(r)
 
-	ID, erro := strconv.ParseUint(parametros["id"], 10, 64)
+	ID, erro := strconv.ParseUint(parametros["usuarioID"], 10, 64)
 	if erro != nil {
 		respostas.ERRO(w, http.StatusBadRequest, erro)
 		return
