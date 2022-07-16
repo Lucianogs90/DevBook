@@ -118,3 +118,19 @@ func (repositorio Usuarios) EditarUsuario(ID uint64, usuario modelos.Usuario) er
 
 	return nil
 }
+
+//ExcluirUsuario exclui as informações de um usuário específico do banco de dados
+func (repositorio Usuarios) ExcluirUsuario(ID uint64) error {
+	statement, erro := repositorio.db.Prepare("DELETE FROM usuarios WHERE id = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	_, erro = statement.Exec(ID)
+	if erro != nil {
+		return erro
+	}
+
+	return nil
+}
