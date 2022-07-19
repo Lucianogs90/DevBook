@@ -15,6 +15,9 @@ var (
 
 	//Porta por onde a API estará rodando
 	Porta = 0
+
+	//SecretKey é a chave de assinatura do token
+	SecretKey []byte
 )
 
 //Carregar vai inicializar as variáveis de ambiente
@@ -33,6 +36,8 @@ func Carregar() {
 	StringConexao = fmt.Sprintf("%s:%s@/%s?charset=utf8&parseTime=True&loc=Local",
 		os.Getenv("DB_USUARIO"),
 		os.Getenv("DB_SENHA"),
-		os.Getenv("DB_NOME"))
+		os.Getenv("DB_NOME"),
+	)
 
+	SecretKey = []byte(os.Getenv("SECRET_KEY"))
 }
