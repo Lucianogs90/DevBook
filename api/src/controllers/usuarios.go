@@ -1,11 +1,13 @@
 package controllers
 
 import (
+	"api/src/autenticacao"
 	"api/src/banco"
 	"api/src/modelos"
 	"api/src/repositorios"
 	"api/src/respostas"
 	"encoding/json"
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"strconv"
@@ -108,6 +110,17 @@ func AlterarUsuario(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	IDToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if ID != IDToken {
+		respostas.ERRO(w, http.StatusForbidden, errors.New("usuário não possui permissão para esta ação"))
+		return
+	}
+
 	corpoRequisicao, erro := ioutil.ReadAll(r.Body)
 	if erro != nil {
 		respostas.ERRO(w, http.StatusUnprocessableEntity, erro)
@@ -150,6 +163,17 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	ID, erro := strconv.ParseUint(parametros["usuarioID"], 10, 64)
 	if erro != nil {
 		respostas.ERRO(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	IDToken, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if ID != IDToken {
+		respostas.ERRO(w, http.StatusForbidden, errors.New("usuário não possui permissão para esta ação"))
 		return
 	}
 
