@@ -186,3 +186,92 @@ func (repositorio Usuarios) DeixarDeSeguir(seguidoID, seguidorID uint64) error {
 
 	return nil
 }
+
+//MostrarSeguidores
+func (repositorio Usuarios) MostrarSeguidores(usuarioID uint64) ([]modelos.Usuario, error) {
+	linhas, erro := repositorio.db.Query("SELECT u.id, u.nome, u.nick, u.email, u.criacao FROM seguidores s INNER JOIN usuarios u ON u.id = s.seguidor_id WHERE s.usuario_id = ?", usuarioID)
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var seguidores []modelos.Usuario
+
+	for linhas.Next() {
+		var seguidor modelos.Usuario
+		if erro := linhas.Scan(
+			&seguidor.ID,
+			&seguidor.Nome,
+			&seguidor.Nick,
+			&seguidor.Email,
+			&seguidor.Criacao,
+		); erro != nil {
+			return nil, erro
+		}
+		seguidores = append(seguidores, seguidor)
+	}
+
+	return seguidores, nil
+}
+
+//MostrarSeguindo
+func (repositorio Usuarios) MostrarSeguindo(usuarioID uint64) ([]modelos.Usuario, error) {
+	linhas, erro := repositorio.db.Query("SELECT u.id, u.nome, u.nick, u.email, u.criacao FROM seguidores s INNER JOIN usuarios u ON u.id = s.usuario_id WHERE s.seguidor_id = ?", usuarioID)
+	if erro != nil {
+		return nil, erro
+	}
+	defer linhas.Close()
+
+	var seguidos []modelos.Usuario
+
+	for linhas.Next() {
+		var seguido modelos.Usuario
+		if erro := linhas.Scan(
+			&seguido.ID,
+			&seguido.Nome,
+			&seguido.Nick,
+			&seguido.Email,
+			&seguido.Criacao,
+		); erro != nil {
+			return nil, erro
+		}
+		seguidos = append(seguidos, seguido)
+	}
+
+	return seguidos, nil
+}
+
+//BuscarSenha traz a senha de um usuário pelo ID
+func (repositorio Usuarios) BuscarSenha(usuarioID uint64) (string, error) {
+	linha, erro := repositorio.db.Query("SELECT senha FROM usuarios WHERE id = ?", usuarioID)
+	if erro != nil {
+		return "", erro
+	}
+	defer linha.Close()
+
+	var usuario modelos.Usuario
+
+	if linha.Next() {
+		if erro = linha.Scan(&usuario.Senha); erro != nil {
+			return "", erro
+		}
+	}
+
+	return usuario.Senha, nil
+}
+
+//MudarSenha altera a senha de um usuario
+func (repositorio Usuarios) MudarSenha(usuarioID uint64, senha string) error {
+	statement, erro := repositorio.db.Prepare("UPDATE usuarios SET senha = ? WHERE id = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	_, erro = statement.Exec(senha, usuarioID)
+	if erro != nil {
+		return erro
+	}
+
+	return nil
+}
