@@ -156,3 +156,33 @@ func (repositorio Usuarios) BuscarPorEmail(email string) (modelos.Usuario, error
 
 	return usuario, nil
 }
+
+//Seguir permite que um usuário siga outro
+func (repositorio Usuarios) Seguir(seguidorID, seguidoID uint64) error {
+	statement, erro := repositorio.db.Prepare("INSERT IGNORE INTO seguidores (usuario_id, seguidor_id) VALUES (?, ?)")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro := statement.Exec(seguidoID, seguidorID); erro != nil {
+		return erro
+	}
+
+	return nil
+}
+
+//DeixarDeSeguir
+func (repositorio Usuarios) DeixarDeSeguir(seguidoID, seguidorID uint64) error {
+	statement, erro := repositorio.db.Prepare("DELETE FROM seguidores WHERE usuario_id =? AND seguidor_id = ?")
+	if erro != nil {
+		return erro
+	}
+	defer statement.Close()
+
+	if _, erro := statement.Exec(seguidoID, seguidorID); erro != nil {
+		return erro
+	}
+
+	return nil
+}

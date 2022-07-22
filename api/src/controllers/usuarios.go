@@ -117,7 +117,7 @@ func AlterarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ID != IDToken {
-		respostas.ERRO(w, http.StatusForbidden, errors.New("usuário não possui permissão para esta ação"))
+		respostas.ERRO(w, http.StatusForbidden, errors.New("não é possível editar um usuário que não seja o seu"))
 		return
 	}
 
@@ -173,7 +173,7 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if ID != IDToken {
-		respostas.ERRO(w, http.StatusForbidden, errors.New("usuário não possui permissão para esta ação"))
+		respostas.ERRO(w, http.StatusForbidden, errors.New("não é possível excluir um usuário que não seja o seu"))
 		return
 	}
 
@@ -188,6 +188,80 @@ func DeletarUsuario(w http.ResponseWriter, r *http.Request) {
 
 	if erro = repositorio.ExcluirUsuario(ID); erro != nil {
 		respostas.ERRO(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
+}
+
+//SeguirUsuario permite que um usuário siga outro usuário
+func SeguirUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	seguidoID, erro := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	seguidorID, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if seguidoID == seguidorID {
+		respostas.ERRO(w, http.StatusForbidden, errors.New("não é possível seguir a si mesmo"))
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.ERRO(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+
+	if erro = repositorio.Seguir(seguidorID, seguidoID); erro != nil {
+		respostas.ERRO(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	respostas.JSON(w, http.StatusNoContent, nil)
+}
+
+//DeixarDeSeguirUsuario permite que um usuário deixe de seguir outro usuário
+func DeixarDeSeguirUsuario(w http.ResponseWriter, r *http.Request) {
+	parametros := mux.Vars(r)
+
+	seguidoID, erro := strconv.ParseUint(parametros["usuarioID"], 10, 64)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusBadRequest, erro)
+		return
+	}
+
+	seguidorID, erro := autenticacao.ExtrairUsuarioID(r)
+	if erro != nil {
+		respostas.ERRO(w, http.StatusUnauthorized, erro)
+		return
+	}
+
+	if seguidoID == seguidorID {
+		respostas.ERRO(w, http.StatusForbidden, errors.New("não é possível deixar de seguir a si mesmo"))
+		return
+	}
+
+	db, erro := banco.Conectar()
+	if erro != nil {
+		respostas.ERRO(w, http.StatusInternalServerError, erro)
+		return
+	}
+
+	repositorio := repositorios.NovoRepositorioDeUsuarios(db)
+
+	if erro = repositorio.DeixarDeSeguir(seguidoID, seguidorID); erro != nil {
+		respostas.ERRO(w, http.StatusInternalServerError, erro)
 		return
 	}
 
