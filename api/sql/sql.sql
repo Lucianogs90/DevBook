@@ -2,8 +2,9 @@ CREATE DATABASE IF NOT EXISTS golang;
 
 USE golang;
 
-DROP TABLE IF EXISTS usuarios;
+DROP TABLE IF EXISTS publicacoes;
 DROP TABLE IF EXISTS seguidores;
+DROP TABLE IF EXISTS usuarios;
 
 CREATE TABLE usuarios(
     id INT PRIMARY KEY AUTO_INCREMENT,
@@ -21,4 +22,14 @@ CREATE TABLE seguidores(
     seguidor_id INT NOT NULL,
     FOREIGN KEY (seguidor_id) REFERENCES usuarios(id) ON DELETE CASCADE,
     PRIMARY KEY (usuario_id, seguidor_id)
+) ENGINE=INNODB, CHARSET=UTF8;
+
+CREATE TABLE publicacoes(
+    id INT PRIMARY KEY AUTO_INCREMENT,
+    titulo VARCHAR(50) NOT NULL,
+    conteudo VARCHAR(300) NOT NULL,
+    autor_id INT NOT NULL,
+    FOREIGN KEY (autor_id) REFERENCES usuarios (id) ON DELETE CASCADE,
+    curtidas INT NOT NULL DEFAULT 0,
+    criacao TIMESTAMP DEFAULT CURRENT_TIMESTAMP()
 ) ENGINE=INNODB, CHARSET=UTF8;
